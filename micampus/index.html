@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiCampus · Plataforma de información del Campus Beauchef</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: var(--white); }
+
+  .hero {
+    min-height: calc(100vh - var(--nav-height));
+    padding: var(--space-12) var(--space-6);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: var(--space-12);
+    align-items: center;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--yellow-200) 0%, transparent 60%);
+    opacity: 0.6;
+    z-index: -1;
+    filter: blur(40px);
+  }
+
+  .hero-content { max-width: 540px; animation: fadeIn 0.6s ease backwards; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px var(--space-3);
+    background: var(--yellow-100);
+    border: 1px solid var(--yellow-300);
+    border-radius: var(--radius-pill);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--yellow-800);
+    margin-bottom: var(--space-5);
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--yellow-600);
+    border-radius: 50%;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: var(--space-5);
+    font-weight: 800;
+  }
+  .hero h1 .highlight {
+    background: linear-gradient(180deg, transparent 60%, var(--yellow-300) 60%);
+    padding: 0 4px;
+    margin: 0 -4px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 500;
+    font-variation-settings: 'opsz' 96;
+  }
+
+  .hero-text {
+    font-size: 1.125rem;
+    color: var(--ink-600);
+    margin-bottom: var(--space-8);
+    line-height: 1.55;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-8);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--ink-200);
+  }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ink-950);
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 0.8125rem;
+    color: var(--ink-600);
+  }
+
+  /* === Visual del lado derecho === */
+  .hero-visual {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    max-width: 520px;
+    margin-left: auto;
+    animation: fadeIn 0.7s ease 0.2s backwards;
+  }
+
+  .visual-card {
+    position: absolute;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-4);
+    border: 1px solid var(--ink-200);
+  }
+
+  .visual-map {
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, var(--yellow-100), transparent 50%),
+      radial-gradient(circle at 70% 70%, var(--yellow-200), transparent 50%),
+      var(--ink-50);
+    border-radius: var(--radius-xl);
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(10, 10, 10, 0.15);
+  }
+  .visual-map svg { width: 100%; height: 100%; }
+
+  .visual-event {
+    bottom: 5%;
+    left: -5%;
+    width: 280px;
+    transform: rotate(-3deg);
+    animation: float 6s ease-in-out infinite;
+  }
+  .visual-org {
+    top: 8%;
+    right: -8%;
+    width: 240px;
+    transform: rotate(4deg);
+    animation: float 6s ease-in-out infinite 2s;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-10px) rotate(-3deg); }
+  }
+  .visual-org { animation-name: floatRight; }
+  @keyframes floatRight {
+    0%, 100% { transform: translateY(0) rotate(4deg); }
+    50%      { transform: translateY(-10px) rotate(4deg); }
+  }
+
+  .visual-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 4px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+  }
+  .visual-card-title { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; line-height: 1.2; margin-bottom: var(--space-1); }
+  .visual-card-meta { font-size: 0.75rem; color: var(--ink-600); }
+
+  /* === Login section === */
+  .login-section {
+    background: var(--ink-950);
+    color: var(--white);
+    padding: var(--space-12) var(--space-6);
+    margin-top: var(--space-12);
+    border-radius: var(--radius-xl);
+    max-width: calc(var(--container-max) - var(--space-12));
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--space-12);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 0%, rgba(255, 214, 10, 0.15), transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(255, 214, 10, 0.08), transparent 50%);
+  }
+  .login-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-12);
+    align-items: center;
+    max-width: calc(var(--container-max) - var(--space-12));
+    margin: 0 auto;
+  }
+  .login-grid h2 { color: var(--white); margin-bottom: var(--space-4); font-size: 2.25rem; }
+  .login-grid p { color: var(--ink-300); margin-bottom: var(--space-6); }
+
+  .login-card {
+    background: var(--white);
+    color: var(--ink-900);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+  }
+  .login-card h3 { margin-bottom: var(--space-2); }
+  .login-card p { color: var(--ink-600); margin-bottom: var(--space-6); font-size: 0.9375rem; }
+  .login-pasaporte {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-4);
+    background: var(--ink-950);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+    transition: background 0.15s;
+  }
+  .login-pasaporte:hover { background: var(--ink-800); }
+  .login-pasaporte-mark {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--yellow-400), var(--yellow-600));
+    display: grid; place-items: center;
+    font-size: 0.75rem;
+    color: var(--ink-950);
+    font-weight: 800;
+  }
+  .login-public {
+    width: 100%;
+    padding: var(--space-3);
+    background: transparent;
+    color: var(--ink-700);
+    border: 1.5px solid var(--ink-200);
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+  .login-public:hover { border-color: var(--ink-700); color: var(--ink-950); }
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+    color: var(--ink-400);
+    font-size: 0.75rem;
+  }
+  .login-divider::before, .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ink-200);
+  }
+
+  .login-features { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-6); }
+  .login-feature { display: flex; gap: var(--space-3); align-items: flex-start; }
+  .login-feature-icon {
+    width: 32px; height: 32px;
+    background: rgba(255, 214, 10, 0.15);
+    color: var(--yellow-500);
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .login-feature-text strong { display: block; color: var(--white); margin-bottom: 2px; }
+  .login-feature-text span { color: var(--ink-400); font-size: 0.875rem; }
+
+  @media (max-width: 880px) {
+    .hero, .login-grid { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+  }
+
+  /* Landing-nav hereda estilos amarillos de styles.css (header.landing-header) */
+</style>
+</head>
+<body>
+
+<header class="landing-header">
+  <div class="landing-nav">
+    <a href="index.html" class="logo">
+      <span class="logo-mark" id="logo-mark-slot"></span>
+      <span class="logo-text">MiCampus</span>
+    </a>
+    <div class="spacer"></div>
+    <div style="display: flex; gap: var(--space-3); align-items: center;">
+      <a href="mapa.html" class="nav-link">Explorar sin cuenta</a>
+      <button class="btn btn-dark" onclick="document.getElementById('login').scrollIntoView({behavior:'smooth'})">Iniciar sesión</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-badge">Beta · Solo Campus Beauchef</span>
+    <h1>
+      Toda la <em>vida</em> del <span class="highlight">campus</span>,<br>
+      en un solo lugar.
+    </h1>
+    <p class="hero-text">
+      Mapa interactivo, organizaciones estudiantiles y todos los eventos de Beauchef. Sin tener que seguir 30 cuentas de Instagram.
+    </p>
+    <div class="hero-actions">
+      <a href="mapa.html" class="btn btn-primary btn-lg">
+        Explorar el mapa
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#login" class="btn btn-outline btn-lg">Iniciar sesión con UChile</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">130k m²</div>
+        <div class="stat-label">de campus mapeado</div>
+      </div>
+      <div>
+        <div class="stat-num">50+</div>
+        <div class="stat-label">organizaciones</div>
+      </div>
+      <div>
+        <div class="stat-num">~5.000</div>
+        <div class="stat-label">estudiantes</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="visual-card visual-map">
+      <!-- Mapa esquemático con pines -->
+      <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+        <!-- Calles -->
+        <line x1="200" y1="0" x2="200" y2="500" stroke="#E5E5E5" stroke-width="20"/>
+        <line x1="0" y1="250" x2="400" y2="250" stroke="#E5E5E5" stroke-width="14"/>
+
+        <!-- Edificios -->
+        <rect x="40" y="60" width="130" height="160" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+        <rect x="230" y="60" width="130" height="100" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+        <rect x="230" y="180" width="130" height="60" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+        <rect x="40" y="280" width="80" height="180" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+        <rect x="150" y="280" width="100" height="80" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+        <rect x="280" y="280" width="80" height="180" fill="white" stroke="#D4D4D4" stroke-width="1.5" rx="6"/>
+
+        <!-- Etiquetas de edificios -->
+        <text x="105" y="145" font-size="10" font-family="Inter Tight" fill="#737373" text-anchor="middle" font-weight="500">B850</text>
+        <text x="295" y="115" font-size="10" font-family="Inter Tight" fill="#737373" text-anchor="middle" font-weight="500">B851 P</text>
+        <text x="80" y="375" font-size="10" font-family="Inter Tight" fill="#737373" text-anchor="middle" font-weight="500">Física</text>
+        <text x="320" y="375" font-size="10" font-family="Inter Tight" fill="#737373" text-anchor="middle" font-weight="500">Geo</text>
+
+        <!-- Pines -->
+        <g class="pin">
+          <circle cx="105" cy="120" r="14" fill="#FFD60A" stroke="#0A0A0A" stroke-width="2"/>
+          <circle cx="105" cy="120" r="20" fill="none" stroke="#FFD60A" stroke-width="2" opacity="0.4">
+            <animate attributeName="r" from="14" to="28" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <circle cx="295" cy="105" r="11" fill="#EC4899" stroke="white" stroke-width="2.5"/>
+        <circle cx="295" cy="210" r="11" fill="#10B981" stroke="white" stroke-width="2.5"/>
+        <circle cx="80" cy="350" r="11" fill="#6366F1" stroke="white" stroke-width="2.5"/>
+        <circle cx="200" cy="320" r="11" fill="#F97316" stroke="white" stroke-width="2.5"/>
+        <circle cx="320" cy="400" r="11" fill="#3B82F6" stroke="white" stroke-width="2.5"/>
+        <circle cx="80" cy="430" r="11" fill="#14B8A6" stroke="white" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <div class="visual-card visual-event">
+      <span class="visual-pill" style="background:#FCE7F3; color:#EC4899;">● Cultural · En 2h</span>
+      <div class="visual-card-title">Tocata de Bienvenida Mechones</div>
+      <div class="visual-card-meta">GMI · Patio B851 · 234 interesados</div>
+    </div>
+
+    <div class="visual-card visual-org">
+      <span class="visual-pill" style="background:#FFF3C4; color:#CB6E17;"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> CADCC</span>
+      <div class="visual-card-title">412 estudiantes</div>
+      <div class="visual-card-meta">Centro de Estudiantes DCC</div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN SECTION -->
+<section id="login" class="login-section">
+  <div class="login-grid">
+    <div>
+      <h2>Inicia sesión con tu Pasaporte UChile</h2>
+      <p>Accede a todas las funcionalidades: marcar favoritos, suscribirte a organizaciones, recibir notificaciones de eventos y más.</p>
+
+      <div class="login-features">
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+          <div class="login-feature-text">
+            <strong>Marca tus favoritos</strong>
+            <span>Guarda salas, organizaciones y eventos para acceso rápido</span>
+          </div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <div class="login-feature-text">
+            <strong>Recibe notificaciones</strong>
+            <span>Avisos de eventos próximos de las organizaciones que te interesan</span>
+          </div>
+        </div>
+        <div class="login-feature">
+          <div class="login-feature-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/><circle cx="8.5" cy="7" r="4"/></svg>
+          </div>
+          <div class="login-feature-text">
+            <strong>Si eres dirigente</strong>
+            <span>Publica eventos y gestiona tu organización en MiCampus</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-card">
+      <h3>Bienvenida</h3>
+      <p>Usa tu cuenta institucional para entrar.</p>
+      <button class="login-pasaporte" onclick="location.href='mapa.html'">
+        <span class="login-pasaporte-mark">U</span>
+        Continuar con Pasaporte UChile
+      </button>
+      <div class="login-divider">o sin cuenta</div>
+      <button class="login-public" onclick="location.href='mapa.html?public=1'">
+        Explorar como visitante
+      </button>
+      <p style="font-size: 0.75rem; color: var(--ink-500); margin-top: var(--space-4); margin-bottom: 0; text-align: center;">
+        Tus datos se manejan según la Ley 21.719.<br>Solo guardamos lo necesario.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="data.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const slot = document.getElementById('logo-mark-slot');
+    if (slot) slot.innerHTML = LOGO_MARK_DARK;
+  });
+</script>
+</body>
+</html>

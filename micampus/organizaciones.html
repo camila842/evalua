@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizaciones · MiCampus</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: var(--ink-50); }
+
+  .orgs-hero {
+    background: var(--ink-950);
+    color: white;
+    padding: var(--space-12) 0;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-8);
+  }
+  .orgs-hero::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, var(--yellow-500), transparent 60%);
+    opacity: 0.15;
+    filter: blur(60px);
+  }
+  .orgs-hero .container { position: relative; }
+  .orgs-hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: var(--space-4);
+    color: white;
+    max-width: 16ch;
+  }
+  .orgs-hero h1 em { color: var(--yellow-500); font-style: normal; }
+  .orgs-hero p {
+    color: var(--ink-300);
+    font-size: 1.125rem;
+    max-width: 50ch;
+    margin-bottom: var(--space-6);
+  }
+  .orgs-hero-stats { display: flex; gap: var(--space-8); }
+  .orgs-hero-stat .num {
+    font-family: var(--font-display);
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--yellow-500);
+    letter-spacing: -0.02em;
+  }
+  .orgs-hero-stat .label { font-size: 0.875rem; color: var(--ink-400); }
+
+  .category-bar {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding: var(--space-2) 0;
+    margin-bottom: var(--space-6);
+    scrollbar-width: thin;
+  }
+  .category-bar::-webkit-scrollbar { height: 4px; }
+
+  .category-section {
+    margin-bottom: var(--space-12);
+  }
+  .category-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-3);
+    border-bottom: 2px solid var(--ink-950);
+  }
+  .category-header h2 {
+    font-size: 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .category-emoji {
+    width: 56px; height: 56px;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+  }
+  .category-emoji svg { width: 28px; height: 28px; }
+  .category-count { font-size: 0.875rem; color: var(--ink-600); font-family: var(--font-mono); }
+
+  /* === Org card === */
+  .org-card {
+    background: var(--white);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    height: 100%;
+  }
+  .org-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--ink-300); }
+
+  .org-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .org-logo {
+    width: 56px; height: 56px;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .org-card-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: 2px;
+    color: var(--ink-950);
+  }
+  .org-card-cat { font-size: 0.75rem; color: var(--ink-600); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .org-card-desc {
+    font-size: 0.875rem;
+    color: var(--ink-700);
+    line-height: 1.55;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .org-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--ink-100);
+    font-size: 0.8125rem;
+    color: var(--ink-600);
+  }
+  .org-card-members { display: flex; align-items: center; gap: var(--space-2); }
+  .org-card-cta { font-weight: 600; color: var(--ink-950); }
+
+  /* === Hero CTA === */
+  .submit-cta {
+    background: linear-gradient(135deg, var(--yellow-300), var(--yellow-500));
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    margin-top: var(--space-12);
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: var(--space-6);
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .submit-cta h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-2);
+  }
+  .submit-cta p { color: var(--ink-800); margin-bottom: var(--space-4); max-width: 50ch; }
+  .submit-cta-icon {
+    text-align: right;
+  }
+
+  @media (max-width: 700px) {
+    .submit-cta { grid-template-columns: 1fr; }
+    .submit-cta-icon { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="navbar-slot" data-page="organizaciones"></div>
+
+<!-- HERO -->
+<section class="orgs-hero">
+  <div class="container">
+    <span class="eyebrow" style="background: rgba(255,214,10,0.2); color: var(--yellow-300); border: 1px solid rgba(255,214,10,0.3);">Vida estudiantil</span>
+    <h1>Encuentra tu <em>tribu</em> en Beauchef.</h1>
+    <p>Más de 50 grupos organizados, centros de estudiantes y ramas deportivas. Desde batucada hasta robótica, escalada, ajedrez o teatro. Hay algo para ti.</p>
+
+    <div class="orgs-hero-stats">
+      <div class="orgs-hero-stat">
+        <div class="num">12</div>
+        <div class="label">Centros de estudiantes</div>
+      </div>
+      <div class="orgs-hero-stat">
+        <div class="num">38</div>
+        <div class="label">Grupos organizados</div>
+      </div>
+      <div class="orgs-hero-stat">
+        <div class="num">7</div>
+        <div class="label">Ramas deportivas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <div class="category-bar">
+    <span class="chip active">Todas (57)</span>
+    <span class="chip"><span data-icon="starFilled"></span> Centros de estudiantes (12)</span>
+    <span class="chip"><span data-icon="music"></span> Cultural (15)</span>
+    <span class="chip"><span data-icon="trophy"></span> Deportivo (10)</span>
+    <span class="chip"><span data-icon="gamepad"></span> Recreación (12)</span>
+    <span class="chip"><span data-icon="leaf"></span> Sustentabilidad (3)</span>
+    <span class="chip"><span data-icon="cross"></span> Religioso (2)</span>
+    <span class="chip"><span data-icon="graduation"></span> Iniciativas (3)</span>
+  </div>
+
+  <!-- ============ CENTROS DE ESTUDIANTES ============ -->
+  <section class="category-section">
+    <div class="category-header">
+      <h2>
+        <span class="category-emoji" style="background: var(--yellow-100); color: var(--yellow-800);" data-icon="starFilled"></span>
+        Centros de Estudiantes
+      </h2>
+      <span class="category-count">12 · REPRESENTACIÓN ESTUDIANTIL</span>
+    </div>
+    <div class="grid grid-cards stagger" id="orgs-ce">
+      <!-- JS render -->
+    </div>
+  </section>
+
+  <!-- ============ CULTURAL ============ -->
+  <section class="category-section">
+    <div class="category-header">
+      <h2>
+        <span class="category-emoji" style="background: #FCE7F3; color: var(--cat-cultural);" data-icon="music"></span>
+        Cultural
+      </h2>
+      <span class="category-count">15 · MÚSICA · TEATRO · ARTE</span>
+    </div>
+    <div class="grid grid-cards stagger" id="orgs-cultural"></div>
+  </section>
+
+  <!-- ============ DEPORTIVO ============ -->
+  <section class="category-section">
+    <div class="category-header">
+      <h2>
+        <span class="category-emoji" style="background: #D1FAE5; color: var(--cat-deportivo);" data-icon="trophy"></span>
+        Deportivo
+      </h2>
+      <span class="category-count">10 · RAMAS Y CLUBES</span>
+    </div>
+    <div class="grid grid-cards stagger" id="orgs-deportivo"></div>
+  </section>
+
+  <!-- ============ RECREACIÓN ============ -->
+  <section class="category-section">
+    <div class="category-header">
+      <h2>
+        <span class="category-emoji" style="background: #FFEDD5; color: var(--cat-recreacion);" data-icon="gamepad"></span>
+        Recreación
+      </h2>
+      <span class="category-count">12 · HOBBIES Y COMUNIDADES</span>
+    </div>
+    <div class="grid grid-cards stagger" id="orgs-recreacion"></div>
+  </section>
+
+  <!-- ============ OTRAS ============ -->
+  <section class="category-section">
+    <div class="category-header">
+      <h2>
+        <span class="category-emoji" style="background: #CCFBF1; color: var(--cat-sustent);" data-icon="leaf"></span>
+        Sustentabilidad y otros
+      </h2>
+      <span class="category-count">5 · IMPACTO Y COMUNIDAD</span>
+    </div>
+    <div class="grid grid-cards stagger" id="orgs-otros"></div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <div class="submit-cta">
+    <div>
+      <h3>¿Tu organización aún no está aquí?</h3>
+      <p>Si eres dirigente de un grupo organizado, centro de estudiantes o rama deportiva, solicita validación para gestionar el perfil de tu organización en MiCampus.</p>
+      <button class="btn btn-dark" onclick="showToast('Solicitud enviada a CEI/SAE para validación', 'check')">
+        Solicitar validación
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <div class="submit-cta-icon" style="display: inline-flex; align-items: center; justify-content: flex-end; color: rgba(10,10,10,0.4);"><svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
+  </div>
+
+</div>
+
+<div id="footer-slot"></div>
+
+<script src="data.js"></script>
+<script>
+  function orgCard(o) {
+    const colors = {
+      'ce': { bg: 'var(--yellow-500)', fg: 'var(--ink-950)' },
+      'cultural': { bg: '#EC4899', fg: 'white' },
+      'deportivo': { bg: '#10B981', fg: 'white' },
+      'recreacion': { bg: '#F97316', fg: 'white' },
+      'sustent': { bg: '#14B8A6', fg: 'white' },
+      'religioso': { bg: '#8B5CF6', fg: 'white' }
+    };
+    const c = colors[o.categoria];
+    return `
+      <article class="org-card" onclick="location.href='organizacion-perfil.html?id=${o.id}'">
+        <div class="org-card-header">
+          <div class="org-logo" style="background: ${c.bg}; color: ${c.fg}">${o.nombre.slice(0,2).toUpperCase()}</div>
+          <div>
+            <div class="org-card-title">${o.nombre}</div>
+            <div class="org-card-cat">${o.categoriaLabel}</div>
+          </div>
+        </div>
+        <p class="org-card-desc">${o.desc}</p>
+        <div class="org-card-footer">
+          <span class="org-card-members">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+            ${o.miembros} miembros
+          </span>
+          <span class="org-card-cta">Ver →</span>
+        </div>
+      </article>
+    `;
+  }
+
+  document.getElementById('orgs-ce').innerHTML       = MOCK.organizaciones.filter(o => o.categoria === 'ce').map(orgCard).join('');
+  document.getElementById('orgs-cultural').innerHTML = MOCK.organizaciones.filter(o => o.categoria === 'cultural').map(orgCard).join('');
+  document.getElementById('orgs-deportivo').innerHTML= MOCK.organizaciones.filter(o => o.categoria === 'deportivo').map(orgCard).join('');
+  document.getElementById('orgs-recreacion').innerHTML=MOCK.organizaciones.filter(o => o.categoria === 'recreacion').map(orgCard).join('');
+  document.getElementById('orgs-otros').innerHTML    = MOCK.organizaciones.filter(o => ['sustent','religioso'].includes(o.categoria)).map(orgCard).join('');
+
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', e => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+  }));
+</script>
+
+</body>
+</html>

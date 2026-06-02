@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis favoritos · MiCampus</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: var(--ink-50); }
+
+  /* === Hero personalizado === */
+  .profile-hero {
+    background: linear-gradient(135deg, var(--yellow-300), var(--yellow-500));
+    padding: var(--space-12) 0 var(--space-16);
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.4), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(0, 0, 0, 0.05), transparent 40%);
+  }
+  .profile-hero .container { position: relative; }
+  .profile-hero-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  .profile-avatar-big {
+    width: 96px; height: 96px;
+    border-radius: var(--radius-lg);
+    background: var(--ink-950);
+    color: var(--yellow-500);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.5rem;
+    border: 4px solid white;
+    box-shadow: var(--shadow-lg);
+  }
+  .profile-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: var(--space-2);
+    color: var(--ink-950);
+  }
+  .profile-hero p {
+    color: var(--ink-800);
+    font-size: 1rem;
+    margin-bottom: var(--space-4);
+  }
+  .profile-hero-stats {
+    display: flex;
+    gap: var(--space-6);
+    background: rgba(10, 10, 10, 0.05);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(10, 10, 10, 0.08);
+    width: fit-content;
+  }
+  .profile-stat .num {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--ink-950);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .profile-stat .label {
+    font-size: 0.75rem;
+    color: var(--ink-700);
+    margin-top: 2px;
+  }
+
+  /* === Tabs === */
+  .tabs-bar {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2);
+    display: flex;
+    gap: var(--space-1);
+    margin-top: -32px;
+    margin-bottom: var(--space-8);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--ink-200);
+    position: relative;
+    z-index: 5;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    background: transparent;
+    border-radius: var(--radius);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ink-600);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--ink-900); background: var(--ink-50); }
+  .tab-btn.active {
+    background: var(--ink-950);
+    color: var(--yellow-500);
+  }
+  .tab-btn .badge {
+    background: rgba(255, 214, 10, 0.2);
+    color: inherit;
+    padding: 1px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+  }
+  .tab-btn:not(.active) .badge { background: var(--ink-100); color: var(--ink-700); }
+
+  .tab-section { display: none; }
+  .tab-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  /* === Empty state === */
+  .empty {
+    text-align: center;
+    padding: var(--space-16) var(--space-6);
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--ink-300);
+  }
+  .empty-emoji { font-size: 3rem; margin-bottom: var(--space-3); }
+  .empty h3 { font-size: 1.25rem; margin-bottom: var(--space-2); }
+  .empty p { color: var(--ink-600); margin-bottom: var(--space-4); max-width: 40ch; margin-left: auto; margin-right: auto; }
+
+  /* === Subscription card === */
+  .sub-card {
+    background: var(--white);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .sub-card:hover { border-color: var(--ink-400); }
+
+  .sub-logo {
+    width: 56px; height: 56px;
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .sub-info { flex: 1; min-width: 0; }
+  .sub-name { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; color: var(--ink-950); margin-bottom: 2px; }
+  .sub-meta { font-size: 0.8125rem; color: var(--ink-600); }
+  .sub-actions { display: flex; gap: var(--space-2); }
+
+  /* === Saved location card === */
+  .fav-loc-card {
+    background: var(--white);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .fav-loc-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+  .fav-loc-image {
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, var(--yellow-300), var(--yellow-500));
+    display: grid;
+    place-items: center;
+    color: var(--ink-950);
+    position: relative;
+  }
+  .fav-loc-image [data-icon] svg { width: 48px; height: 48px; }
+  .fav-loc-heart {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    width: 36px; height: 36px;
+    background: var(--white);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--danger);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+  .fav-loc-body { padding: var(--space-4); }
+  .fav-loc-title { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--ink-950); margin-bottom: 4px; }
+  .fav-loc-meta { font-size: 0.8125rem; color: var(--ink-600); }
+
+  /* === Event saved === */
+  .saved-event {
+    background: var(--white);
+    border: 1px solid var(--ink-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: var(--space-4);
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    margin-bottom: var(--space-3);
+  }
+  .saved-event:hover { border-color: var(--ink-950); transform: translateX(4px); }
+
+  .saved-event-date {
+    background: var(--yellow-100);
+    border-radius: var(--radius);
+    text-align: center;
+    padding: var(--space-3);
+    border: 1px solid var(--yellow-200);
+  }
+  .saved-event-date .day {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--yellow-800);
+    line-height: 1;
+  }
+  .saved-event-date .month {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--yellow-700);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* Notificaciones header */
+  .notif-banner {
+    background: var(--ink-950);
+    color: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+  .notif-icon {
+    width: 48px; height: 48px;
+    background: var(--yellow-500);
+    color: var(--ink-950);
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .notif-banner h3 { color: white; font-size: 1.0625rem; margin-bottom: 4px; }
+  .notif-banner p { color: var(--ink-400); font-size: 0.875rem; margin: 0; }
+
+  @media (max-width: 700px) {
+    .profile-hero-grid { grid-template-columns: 1fr; text-align: center; }
+    .profile-avatar-big { margin: 0 auto; }
+    .profile-hero-stats { margin: 0 auto; }
+    .tabs-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div id="navbar-slot" data-page="favoritos"></div>
+
+<!-- HERO -->
+<section class="profile-hero">
+  <div class="container">
+    <div class="profile-hero-grid">
+      <div class="profile-avatar-big">PR</div>
+      <div>
+        <h1>Hola, Pablo</h1>
+        <p>Aquí están tus favoritos, suscripciones y eventos guardados.</p>
+        <div class="profile-hero-stats">
+          <div class="profile-stat">
+            <div class="num">7</div>
+            <div class="label">Ubicaciones favoritas</div>
+          </div>
+          <div class="profile-stat">
+            <div class="num">5</div>
+            <div class="label">Suscripciones</div>
+          </div>
+          <div class="profile-stat">
+            <div class="num">3</div>
+            <div class="label">Eventos guardados</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="ubicaciones">
+      <span data-icon="pin"></span> Ubicaciones <span class="badge">7</span>
+    </button>
+    <button class="tab-btn" data-tab="suscripciones">
+      <span data-icon="users"></span> Organizaciones <span class="badge">5</span>
+    </button>
+    <button class="tab-btn" data-tab="eventos">
+      <span data-icon="calendar"></span> Eventos <span class="badge">3</span>
+    </button>
+    <button class="tab-btn" data-tab="notificaciones">
+      <span data-icon="bell"></span> Notificaciones <span class="badge">12</span>
+    </button>
+  </div>
+
+  <!-- TAB: UBICACIONES -->
+  <section class="tab-section active" id="tab-ubicaciones">
+    <h2 style="font-size: 1.5rem; margin-bottom: var(--space-4)">Tus lugares guardados</h2>
+    <div class="grid grid-cards stagger">
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="color: var(--ink-950);">
+          <span data-icon="building2" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Auditorio Gorbea</div>
+          <div class="fav-loc-meta">B850 · Sala emblemática</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: linear-gradient(135deg, #6EE7B7, #10B981); color: white;">
+          <span data-icon="building" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Sala Nicanor Parra (G108)</div>
+          <div class="fav-loc-meta">Edificio Geología · Cap. 45</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: linear-gradient(135deg, #A5B4FC, #6366F1); color: white;">
+          <span data-icon="library" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Biblioteca Central</div>
+          <div class="fav-loc-meta">B850 · L-V 8:30-21:00</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: linear-gradient(135deg, #FDBA74, #F97316); color: white;">
+          <span data-icon="utensils" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Casino Domeyko</div>
+          <div class="fav-loc-meta">Av. Blanco Encalada</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: linear-gradient(135deg, #5EEAD4, #14B8A6); color: white;">
+          <span data-icon="waves" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Piscina semiolímpica</div>
+          <div class="fav-loc-meta">B851 · Subterráneo</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: linear-gradient(135deg, #F9A8D4, #EC4899); color: white;">
+          <span data-icon="building2" style="font-size: 48px"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Auditorio d'Etigny</div>
+          <div class="fav-loc-meta">B851 Poniente · Piso 2</div>
+        </div>
+      </div>
+
+      <div class="fav-loc-card" onclick="location.href='mapa.html'">
+        <div class="fav-loc-image" style="background: var(--ink-100);">
+          <span data-icon="building"></span>
+          <div class="fav-loc-heart" onclick="event.stopPropagation(); showToast('Quitado de favoritos', 'heart')">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/></svg>
+          </div>
+        </div>
+        <div class="fav-loc-body">
+          <div class="fav-loc-title">Sala Q10</div>
+          <div class="fav-loc-meta">Edificio Física · Cap. 60</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: SUSCRIPCIONES -->
+  <section class="tab-section" id="tab-suscripciones">
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-4);">
+      <h2 style="font-size: 1.5rem; margin: 0">Organizaciones que sigues</h2>
+      <a href="organizaciones.html" class="btn btn-outline btn-sm">+ Buscar más</a>
+    </div>
+
+    <div class="stagger" style="display: flex; flex-direction: column; gap: var(--space-3);">
+
+      <div class="sub-card">
+        <div class="sub-logo" style="background: var(--yellow-500); color: var(--ink-950);">CC</div>
+        <div class="sub-info">
+          <div class="sub-name">CADCC</div>
+          <div class="sub-meta">Centro de Estudiantes · 412 miembros · 3 eventos próximos</div>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Notificaciones desactivadas')"><span data-icon="bell"></span></button>
+          <a href="organizacion-perfil.html" class="btn btn-outline btn-sm">Ver</a>
+        </div>
+      </div>
+
+      <div class="sub-card">
+        <div class="sub-logo" style="background: #EC4899; color: white;">GM</div>
+        <div class="sub-info">
+          <div class="sub-name">GMI</div>
+          <div class="sub-meta">Cultural · 91 miembros · 2 eventos próximos</div>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-ghost btn-sm"><span data-icon="bell"></span></button>
+          <a href="organizacion-perfil.html" class="btn btn-outline btn-sm">Ver</a>
+        </div>
+      </div>
+
+      <div class="sub-card">
+        <div class="sub-logo" style="background: #10B981; color: white;">EB</div>
+        <div class="sub-info">
+          <div class="sub-name">Escalada Beauchef</div>
+          <div class="sub-meta">Deportivo · 67 miembros · 1 evento próximo</div>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-ghost btn-sm"><span data-icon="bell"></span></button>
+          <a href="organizacion-perfil.html" class="btn btn-outline btn-sm">Ver</a>
+        </div>
+      </div>
+
+      <div class="sub-card">
+        <div class="sub-logo" style="background: #14B8A6; color: white;">SB</div>
+        <div class="sub-info">
+          <div class="sub-name">Sustenta Beauchef</div>
+          <div class="sub-meta">Sustentabilidad · 45 miembros · 1 evento próximo</div>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-ghost btn-sm"><span data-icon="bell"></span></button>
+          <a href="organizacion-perfil.html" class="btn btn-outline btn-sm">Ver</a>
+        </div>
+      </div>
+
+      <div class="sub-card">
+        <div class="sub-logo" style="background: var(--yellow-500); color: var(--ink-950);">CE</div>
+        <div class="sub-info">
+          <div class="sub-name">CEI</div>
+          <div class="sub-meta">Centro de Estudiantes · 5.021 miembros · Sin eventos próximos</div>
+        </div>
+        <div class="sub-actions">
+          <button class="btn btn-ghost btn-sm"><span data-icon="bell"></span></button>
+          <a href="organizacion-perfil.html" class="btn btn-outline btn-sm">Ver</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TAB: EVENTOS -->
+  <section class="tab-section" id="tab-eventos">
+    <h2 style="font-size: 1.5rem; margin-bottom: var(--space-4)">Eventos a los que vas</h2>
+
+    <div class="saved-event" onclick="location.href='evento-detalle.html'">
+      <div class="saved-event-date">
+        <div class="day">29</div>
+        <div class="month">Abr</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Tocata de Bienvenida Mechones 2026</div>
+        <div style="font-size: 0.8125rem; color: var(--ink-600);">20:00 · Patio B851 · GMI · 234 interesados</div>
+      </div>
+      <span class="tag tag-cat-cultural">Cultural</span>
+    </div>
+
+    <div class="saved-event" onclick="location.href='evento-detalle.html'">
+      <div class="saved-event-date">
+        <div class="day">30</div>
+        <div class="month">Abr</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Charla: Carrera en Industria del Software</div>
+        <div style="font-size: 0.8125rem; color: var(--ink-600);">18:30 · Aud. Gorbea · CADCC · 89 interesados</div>
+      </div>
+      <span class="tag tag-cat-academic">Académico</span>
+    </div>
+
+    <div class="saved-event" onclick="location.href='evento-detalle.html'">
+      <div class="saved-event-date">
+        <div class="day">08</div>
+        <div class="month">May</div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Feria Empresarial DCC 2026</div>
+        <div style="font-size: 0.8125rem; color: var(--ink-600);">10:00 · Hall B851 · CADCC · 412 interesados</div>
+      </div>
+      <span class="tag tag-cat-academic">Académico</span>
+    </div>
+  </section>
+
+  <!-- TAB: NOTIFICACIONES -->
+  <section class="tab-section" id="tab-notificaciones">
+
+    <div class="notif-banner">
+      <div class="notif-icon">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+      <div style="flex: 1;">
+        <h3>Tienes 3 notificaciones nuevas</h3>
+        <p>Eventos próximos y novedades de las organizaciones que sigues</p>
+      </div>
+      <button class="btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="showToast('Marcadas como leídas')">Marcar todas leídas</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-2)">
+      <!-- Nuevas -->
+      <div style="padding: var(--space-4); background: var(--white); border: 2px solid var(--yellow-500); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--yellow-100); border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--cat-cultural);" data-icon="music"></div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">GMI tiene un evento <strong>en 2 horas</strong>: Tocata de Bienvenida</div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">Recordatorio · Hace 30 min</div>
+        </div>
+        <span style="width: 8px; height: 8px; background: var(--yellow-500); border-radius: 50%; margin-top: var(--space-2);"></span>
+      </div>
+
+      <div style="padding: var(--space-4); background: var(--white); border: 2px solid var(--yellow-500); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: #EEF2FF; border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--cat-academic);" data-icon="graduation"></div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">CADCC publicó un nuevo evento: <strong>Feria Empresarial DCC 2026</strong></div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">CADCC · Hace 2 horas</div>
+        </div>
+        <span style="width: 8px; height: 8px; background: var(--yellow-500); border-radius: 50%; margin-top: var(--space-2);"></span>
+      </div>
+
+      <div style="padding: var(--space-4); background: var(--white); border: 2px solid var(--yellow-500); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: #D1FAE5; border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--cat-deportivo);" data-icon="trophy"></div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 4px;">Escalada Beauchef cambió la ubicación de la <strong>Salida al Cajón del Maipo</strong></div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">Encuentro ahora en Acceso B850 · Hace 5 horas</div>
+        </div>
+        <span style="width: 8px; height: 8px; background: var(--yellow-500); border-radius: 50%; margin-top: var(--space-2);"></span>
+      </div>
+
+      <!-- Leídas -->
+      <div style="padding: var(--space-4); background: var(--white); border: 1px solid var(--ink-200); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start; opacity: 0.65;">
+        <div style="width: 40px; height: 40px; background: #FCE7F3; border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--cat-cultural);" data-icon="music"></div>
+        <div style="flex: 1;">
+          <div style="margin-bottom: 4px;">Macumba Batucada subió fotos del último ensayo</div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">Macumba · Ayer</div>
+        </div>
+      </div>
+
+      <div style="padding: var(--space-4); background: var(--white); border: 1px solid var(--ink-200); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start; opacity: 0.65;">
+        <div style="width: 40px; height: 40px; background: #CCFBF1; border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--cat-sustent);" data-icon="leaf"></div>
+        <div style="flex: 1;">
+          <div style="margin-bottom: 4px;">Sustenta Beauchef te invitó al evento <strong>Limpieza del Campus + Choripán</strong></div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">Sustenta · Hace 2 días</div>
+        </div>
+      </div>
+
+      <div style="padding: var(--space-4); background: var(--white); border: 1px solid var(--ink-200); border-radius: var(--radius); display: flex; gap: var(--space-3); align-items: flex-start; opacity: 0.65;">
+        <div style="width: 40px; height: 40px; background: var(--yellow-100); border-radius: var(--radius); display: grid; place-items: center; flex-shrink: 0; color: var(--yellow-800);" data-icon="settings"></div>
+        <div style="flex: 1;">
+          <div style="margin-bottom: 4px;">El SAE actualizó la ubicación de <strong>Sala G108</strong> en el mapa</div>
+          <div style="font-size: 0.8125rem; color: var(--ink-600);">Admin SAE · Hace 4 días</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="footer-slot"></div>
+
+<script src="data.js"></script>
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
